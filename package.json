@@ -12,10 +12,13 @@
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@mui/material": "^6.1.8",
+    "axios": "^1.7.7",
+    "js-cookie": "^3.0.5",
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
-    "react-dropzone": "^14.3.5"
+    "react-dropzone": "^14.3.5",
+    "react-query": "^3.39.3"
   },
   "devDependencies": {
     "@types/node": "^20",

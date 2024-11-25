@@ -5,30 +5,54 @@ import React, { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
+import { useAddProduct } from "../../api/add-product";
 
 const FormPage = () => {
-  const [image, setImage] = useState(null);
+  // -- HOOK --
+  const router = useRouter();
+
+  // -- STATE --
+  const [image, setImage] = useState<any>(null);
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
 
-  const router = useRouter();
+  // -- HOOK --
+  const addProduct = useAddProduct();
 
+  // -- FUNCTION --
   const onDrop = (acceptedFiles: any) => {
     const file = acceptedFiles[0];
     setImage(file);
   };
 
   const handleSubmit = (e: any) => {
+    console.log(sku, image, price);
     e.preventDefault();
-    console.log({ image, sku, price });
-    alert("Form submitted!");
+    addProduct.mutate(
+      {
+        sku,
+        image,
+        price,
+      },
+      {
+        onSuccess: () => {
+          setImage(null);
+          setSku("");
+          setPrice("");
+          alert("Form submitted!");
+        },
+      }
+    );
   };
 
   const handleRedirect = () => {
     router.push("/upload-glb"); // Redirects to `/another-page`
   };
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: "image/*" });
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: "image/*" as any,
+  });
 
   return (
     <Box
@@ -66,7 +90,9 @@ const FormPage = () => {
         {image ? (
           <Typography color="success.main">{image.name}</Typography>
         ) : (
-          <Typography>Drag 'n' drop an image, or click to select one</Typography>
+          <Typography color="textSecondary">
+            Drag 'n' drop an image, or click to select one
+          </Typography>
         )}
       </Box>
 
