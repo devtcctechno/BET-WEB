@@ -12,7 +12,6 @@ async function fetchAddProductGLB(input: GlbUpload) {
     headers: {
       "Content-Type": "multipart/form-data",
     },
-    timeout: 60
   });
 }
 
