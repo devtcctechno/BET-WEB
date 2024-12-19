@@ -23,6 +23,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useDeleteProduct } from "../../../api/delete-product";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+import LoadingButton from "@mui/lab/LoadingButton";
 
 const AnotherPage = () => {
   // -- HOOK --
@@ -246,7 +247,7 @@ const AnotherPage = () => {
 
       {/* Buttons */}
       <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
-        <Button
+        <LoadingButton
           variant="contained"
           color="primary"
           disabled={
@@ -255,9 +256,10 @@ const AnotherPage = () => {
             selectedPmat.length === 0
           }
           onClick={handleSave}
+          loading={addGlb.isLoading}
         >
           Save
-        </Button>
+        </LoadingButton>
         <Button
           variant="contained"
           disabled={selectedOption.length === 0}
@@ -329,17 +331,20 @@ const AnotherPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>No</Button>
-          <Button
+          {!(deleteGlb.isLoading || deleteProduct.isLoading) && (
+            <Button onClick={handleClose}>No</Button>
+          )}
+          <LoadingButton
             onClick={() =>
               open.deleteType === "product"
                 ? handleDeleteProduct()
                 : handleDelete()
             }
             autoFocus
+            loading={deleteGlb.isLoading || deleteProduct.isLoading}
           >
             Yes
-          </Button>
+          </LoadingButton>
         </DialogActions>
       </Dialog>
       <Snackbar

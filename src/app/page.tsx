@@ -7,6 +7,7 @@ import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { useAddProduct } from "../../api/add-product";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+import { LoadingButton } from "@mui/lab";
 
 const FormPage = () => {
   // -- HOOK --
@@ -137,15 +138,16 @@ const FormPage = () => {
       />
 
       {/* Submit Button */}
-      <Button
+      <LoadingButton
         variant="contained"
         color="primary"
         onClick={handleSubmit}
         sx={{ mt: 2 }}
         disabled={!image || !sku || !price}
+        loading={addProduct.isLoading}
       >
         Submit
-      </Button>
+      </LoadingButton>
 
       {/* Redirect Button */}
       <Button
