@@ -6,6 +6,7 @@ import { TextField, Button, Typography, Box } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useRouter } from "next/navigation";
 import { useAddProduct } from "../../api/add-product";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 
 const FormPage = () => {
   // -- HOOK --
@@ -15,6 +16,10 @@ const FormPage = () => {
   const [image, setImage] = useState<any>(null);
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
+  const [open, setOpen] = React.useState({
+    open: false,
+    message: "",
+  });
 
   // -- HOOK --
   const addProduct = useAddProduct();
@@ -39,7 +44,10 @@ const FormPage = () => {
           setImage(null);
           setSku("");
           setPrice("");
-          alert("Form submitted!");
+          setOpen({
+            open: true,
+            message: "Product added successfully!",
+          });
         },
       }
     );
@@ -53,6 +61,19 @@ const FormPage = () => {
     onDrop,
     accept: "image/*" as any,
   });
+  const handleClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen({
+      open: false,
+      message: "",
+    });
+  };
 
   return (
     <Box
@@ -135,6 +156,14 @@ const FormPage = () => {
       >
         Go to Glb Upload Page
       </Button>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={open.open}
+        autoHideDuration={2000}
+        onClose={handleClose}
+        message={open.message}
+        sx={{ "& .MuiSnackbarContent-root": { backgroundColor: "blue" } }}
+      />
     </Box>
   );
 };

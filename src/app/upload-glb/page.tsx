@@ -21,6 +21,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { useDeleteProduct } from "../../../api/delete-product";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 
 const AnotherPage = () => {
   // -- HOOK --
@@ -30,22 +32,40 @@ const AnotherPage = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [selectedGlbs, setSelectedGlbs] = useState<any[]>([]);
   const [selectedPmat, setSelectedPmat] = useState<any[]>([]);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState({
+    open: false,
+    confirmOpen: false,
+    message: "",
+    deleteType: "",
+    openToast: false,
+    toastMessage: "",
+  });
 
   //-- API --
-  const skuList = useSkuList().data?.data;
+  const skuList = useSkuList();
   const addGlb = useAddProductGLB();
   const deleteGlb = useDeleteProductGLB();
+  const deleteProduct = useDeleteProduct();
 
   // -- USE EFFECT --
   useEffect(() => {
-    if (deleteGlb.isSuccess) {
+    if (deleteGlb.isSuccess || deleteProduct.isSuccess) {
+      skuList.refetch();
       setSelectedOption("");
       setSelectedGlbs([]);
       setSelectedPmat([]);
-      setOpen(false);
+      setOpen({
+        open: false,
+        confirmOpen: false,
+        message: "",
+        deleteType: "",
+        openToast: true,
+        toastMessage: deleteGlb.isSuccess
+          ? "Files deleted successfully"
+          : "Product deleted successfully",
+      });
     }
-  }, [deleteGlb.isSuccess]);
+  }, [deleteGlb.isSuccess, deleteProduct.isSuccess]);
 
   // -- FUNCTION --
   const handleDropdownChange = (event: any) => {
@@ -53,7 +73,28 @@ const AnotherPage = () => {
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpen({
+      open: false,
+      confirmOpen: false,
+      message: "",
+      deleteType: "",
+      openToast: false,
+      toastMessage: "",
+    });
+  };
+
+  const handleToastClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen({
+      ...open,
+      openToast: false,
+    });
   };
 
   const Dropzone = ({ label, onDrop, selected }: any) => {
@@ -112,35 +153,62 @@ const AnotherPage = () => {
           setSelectedOption("");
           setSelectedGlbs([]);
           setSelectedPmat([]);
+          setOpen({
+            ...open,
+            openToast: true,
+            toastMessage: "Files uploaded successfully",
+          });
         },
       }
     );
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleClickOpen = (message: string, deleteType: string) => {
+    setOpen({
+      open: true,
+      confirmOpen: false,
+      message: message,
+      deleteType: deleteType,
+      openToast: false,
+      toastMessage: "",
+    });
+  };
+
+  const handleConfirmOpen = (message: string, deleteType: string) => {
+    setOpen({
+      open: false,
+      confirmOpen: true,
+      message: message,
+      deleteType: deleteType,
+      openToast: false,
+      toastMessage: "",
+    });
   };
 
   const handleDelete = () => {
     deleteGlb.mutate(selectedOption);
   };
 
+  const handleDeleteProduct = () => {
+    deleteProduct.mutate(selectedOption);
+  };
+
   return (
     <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 3,
-      my: 'auto',
-      px: 3,
-      py: 5,
-      border: "1px solid #ccc",
-      borderRadius: 2,
-      maxWidth: 700,
-      margin: "auto",
-      backgroundColor: "#f9f9f9",
-    }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 3,
+        my: "auto",
+        px: 3,
+        py: 5,
+        border: "1px solid #ccc",
+        borderRadius: 2,
+        maxWidth: 700,
+        margin: "auto",
+        backgroundColor: "#f9f9f9",
+      }}
     >
       <Typography variant="h3" color="primary" mb={3}>
         GLB and PMAT files upload
@@ -154,7 +222,7 @@ const AnotherPage = () => {
           value={selectedOption}
           onChange={handleDropdownChange}
         >
-          {skuList?.map((item: any) => {
+          {skuList.data?.data?.map((item: any) => {
             return (
               <MenuItem key={item.id} value={item.id}>
                 {item.sku}
@@ -190,7 +258,12 @@ const AnotherPage = () => {
         >
           Save
         </Button>
-        <Button variant="contained" color="error" onClick={handleClickOpen}>
+        <Button
+          variant="contained"
+          disabled={selectedOption.length === 0}
+          color="error"
+          onClick={() => handleClickOpen("", "")}
+        >
           Delete
         </Button>
       </Box>
@@ -210,23 +283,73 @@ const AnotherPage = () => {
         Go Back to Product Page
       </Button>
       <Dialog
-        open={open}
+        open={open.open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this Product Glb and Pmat files ?
+            What you want to Delete ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() =>
+              handleConfirmOpen(
+                "Are you sure you want to delete this Product?",
+                "product"
+              )
+            }
+          >
+            Product
+          </Button>
+          <Button
+            onClick={() =>
+              handleConfirmOpen(
+                "Are you sure you want to delete this Product files?",
+                "file"
+              )
+            }
+            autoFocus
+          >
+            Product Files
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={open.confirmOpen}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {open.message}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>No</Button>
-          <Button onClick={handleDelete} autoFocus>
+          <Button
+            onClick={() =>
+              open.deleteType === "product"
+                ? handleDeleteProduct()
+                : handleDelete()
+            }
+            autoFocus
+          >
             Yes
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        open={open.openToast}
+        autoHideDuration={2000}
+        onClose={handleToastClose}
+        message={open.toastMessage}
+        sx={{ "& .MuiSnackbarContent-root": { backgroundColor: "blue" } }}
+      />
     </Box>
   );
 };
