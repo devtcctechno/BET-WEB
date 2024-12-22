@@ -33,6 +33,7 @@ const AnotherPage = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [selectedGlbs, setSelectedGlbs] = useState<any[]>([]);
   const [selectedPmat, setSelectedPmat] = useState<any[]>([]);
+  const [selectedDmat, setSelectedDmat] = useState<any[]>([]);
   const [open, setOpen] = useState({
     open: false,
     confirmOpen: false,
@@ -55,6 +56,7 @@ const AnotherPage = () => {
       setSelectedOption("");
       setSelectedGlbs([]);
       setSelectedPmat([]);
+      setSelectedDmat([]);
       setOpen({
         open: false,
         confirmOpen: false,
@@ -101,7 +103,7 @@ const AnotherPage = () => {
   const Dropzone = ({ label, onDrop, selected }: any) => {
     const { getRootProps, getInputProps } = useDropzone({
       onDrop,
-      accept: { "application/octet-stream": [".glb", ".pmat"] },
+      accept: { "application/octet-stream": [".glb", ".pmat", ".dmat"] },
     });
 
     return (
@@ -135,6 +137,12 @@ const AnotherPage = () => {
     setSelectedPmat(files);
   };
 
+  const handleDmatDrop = (files: any) => {
+    setSelectedDmat(files);
+  };
+
+  
+
   const handleSave = () => {
     const formData = new FormData();
     selectedGlbs.map((glbs) => {
@@ -143,6 +151,10 @@ const AnotherPage = () => {
     selectedPmat.map((pmat) => {
       formData.append("PMAT", pmat);
     });
+    selectedDmat.map((dmat) => {
+      formData.append("PMAT", dmat);
+    });
+    
 
     addGlb.mutate(
       {
@@ -154,6 +166,7 @@ const AnotherPage = () => {
           setSelectedOption("");
           setSelectedGlbs([]);
           setSelectedPmat([]);
+          setSelectedDmat([]);
           setOpen({
             ...open,
             openToast: true,
@@ -244,6 +257,11 @@ const AnotherPage = () => {
         onDrop={handlePmatDrop}
         selected={selectedPmat.length}
       />
+      <Dropzone
+        label="DMAT"
+        onDrop={handleDmatDrop}
+        selected={selectedDmat.length}
+      />
 
       {/* Buttons */}
       <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
@@ -252,8 +270,7 @@ const AnotherPage = () => {
           color="primary"
           disabled={
             selectedOption.length === 0 ||
-            selectedGlbs.length === 0 ||
-            selectedPmat.length === 0
+            selectedGlbs.length === 0 
           }
           onClick={handleSave}
           loading={addGlb.isLoading}
